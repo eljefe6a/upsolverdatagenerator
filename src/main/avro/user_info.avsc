@@ -1,0 +1,15 @@
+{"namespace": "model",
+ "type": "record",
+ "name": "UserInfo",
+ "fields": [
+     {"name": "user_id", "type": "string", "default" : "", "doc" : "The unique ID of the game"},
+     {"name": "first_name", "type": "string", "default" : "", "doc" : "The user's first name"},
+     {"name": "last_name", "type": "string", "default" : "", "doc" : "The user's last name"},
+     {"name": "credit_card", "type": "string", "default" : "", "doc" : "The user's credit card number"},
+     {"name": "address", "type": "string", "default" : "", "doc" : "The user's address"},
+     {"name": "phone", "type": "string", "default" : "", "doc" : "The user's phone number"},
+     {"name": "password", "type": "string", "default" : "", "doc" : "The user's password"},
+     {"name": "subscription", "type": "string", "default" : "", "doc" : "The type of subscription for the user"}
+     
+ ]
+}

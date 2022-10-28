@@ -1,0 +1,22 @@
+{"namespace": "model",
+ "type": "record",
+ "name": "ApacheLog",
+ "fields": [
+     {"name": "host", "type": "string", "default" : "", "doc" : "The host IP address of the log entry"},
+     {"name": "user_id", "type": "string", "default" : "", "doc" : "The user's unique ID"},
+     {"name": "timestamp", "type": "string", "default" : "", "doc" : "The timestamp of the log entry"},
+     {
+       "name": "http_method", "doc" : "The HTTP method for the HTTP call",
+       "type" : {
+         "type" : "enum",
+         "name" : "HTTPMethods",
+         "symbols" : ["GET", "PUT", "POST", "DELETE"]
+       },
+      "default" : "GET"
+     },
+     {"name": "url", "type": "string", "default" : "", "doc" : "The URL accessed"},
+     {"name": "protocol", "type": "string", "default" : "", "doc" : "The HTTP protocol"},
+     {"name": "status_code", "type": "string", "default" : "", "doc" : "The HTTP status code"},
+     {"name": "browser_client", "type": "string", "default" : "", "doc" : "The user's browser client"}
+ ]
+}
