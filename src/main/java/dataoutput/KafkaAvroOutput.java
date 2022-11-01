@@ -18,6 +18,7 @@ public class KafkaAvroOutput implements DataOutput {
 	KafkaProducer<String, UserInfo> userInfoProducer;
 	KafkaProducer<String, ApacheLog> apacheLogProducer;
 
+	@Override
 	public void init() {
 		Properties properties = new Properties();
 		properties.put(BOOTSTRAP_SERVERS_CONFIG, "broker1:9092");
@@ -33,13 +34,13 @@ public class KafkaAvroOutput implements DataOutput {
 
 	@Override
 	public void writeUserInfo(UserInfo userInfo) {
-		ProducerRecord<String, UserInfo> outputRecord = new ProducerRecord<>("card_avro", userInfo.getUserId(), userInfo);
+		ProducerRecord<String, UserInfo> outputRecord = new ProducerRecord<>("user_info", userInfo.getUserId(), userInfo);
 		userInfoProducer.send(outputRecord);
 	}
 
 	@Override
 	public void writeApacheLog(ApacheLog apacheLog) {
-		ProducerRecord<String, ApacheLog> outputRecord = new ProducerRecord<>("card_avro", apacheLog.getUserId(), apacheLog);
+		ProducerRecord<String, ApacheLog> outputRecord = new ProducerRecord<>("apache_log", apacheLog.getUserId(), apacheLog);
 		apacheLogProducer.send(outputRecord);
 	}
 

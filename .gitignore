@@ -27,3 +27,5 @@ hs_err_pid*
 .settings/
 target/
 src/main/java/model/
+apachelog.avro
+userinfo.avro

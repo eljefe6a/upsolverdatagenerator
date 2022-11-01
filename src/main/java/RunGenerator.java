@@ -1,5 +1,6 @@
 import datacreator.DataCreator;
 import datacreator.FakerCreator;
+import dataoutput.AvroFileOutput;
 import dataoutput.DataOutput;
 import dataoutput.KafkaAvroOutput;
 import model.ApacheLog;
@@ -11,7 +12,9 @@ public class RunGenerator {
 		DataCreator dataCreator = new FakerCreator();
 		dataCreator.init();
 		
-		DataOutput output = new KafkaAvroOutput();
+		//DataOutput output = new KafkaAvroOutput();
+		DataOutput output = new AvroFileOutput();
+		output.init();
 		
 		// Write out initial UserInfos
 		for (UserInfo userInfo : dataCreator.getUserIdToUserInfo().values()) {
@@ -22,11 +25,11 @@ public class RunGenerator {
 		for (int i = 0; i < 1000; i++) {
 			Tuple2<UserInfo, ApacheLog> create = dataCreator.create();
 			
-			// Randomize which is written first?
+			// TODO: Randomize which is written first?
 			output.writeApacheLog(create._2());
 			
-			// UserInfo is reused and written before
-			if (output != null) {
+			// UserInfo is a brand new one. Write it out.
+			if (create._1() != null) {
 				output.writeUserInfo(create._1());
 			}
 		}
