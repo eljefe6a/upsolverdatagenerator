@@ -2,7 +2,6 @@ import datacreator.DataCreator;
 import datacreator.FakerCreator;
 import dataoutput.AvroFileOutput;
 import dataoutput.DataOutput;
-import dataoutput.KafkaAvroOutput;
 import model.ApacheLog;
 import model.UserInfo;
 import scala.Tuple2;
@@ -22,7 +21,7 @@ public class RunGenerator {
 		}
 		
 		// Write out ApacheLogs and UserInfos
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 100_000; i++) {
 			Tuple2<UserInfo, ApacheLog> create = dataCreator.create();
 			
 			// TODO: Randomize which is written first?

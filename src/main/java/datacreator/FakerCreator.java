@@ -1,6 +1,9 @@
 package datacreator;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Random;
 
 import model.ApacheLog;
@@ -16,9 +19,17 @@ public class FakerCreator implements DataCreator {
 	
 	Random random;
 	
+	DateTimeFormatter apacheLogDTF;
+	
+	ZonedDateTime logTime;
+	
 	@Override
 	public void init() {
 		faker = new Faker();
+		
+		apacheLogDTF = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.US);
+		
+		logTime = ZonedDateTime.now();
 		
 		random = new Random();
 		
@@ -64,6 +75,7 @@ public class FakerCreator implements DataCreator {
 		userInfo.setUserId(faker.name().username());
 		
 		userInfo.setAddress(faker.address().fullAddress());
+		
 		userInfo.setPhone(faker.phoneNumber().phoneNumber());
 		
 		userInfo.setPassword(faker.internet().password());
@@ -79,9 +91,10 @@ public class FakerCreator implements DataCreator {
 		// TODO: Make IP and browser client consistent?
 		apacheLog.setHost(faker.internet().ipV4Address());
 		apacheLog.setUserId(userId);
+		apacheLog.setTimestamp(apacheLogDTF.format(logTime));
 		
-		// TODO
-		//apacheLog.setTimestamp(System.currentTimeMillis());
+		// Advance the log time a random amount of time
+		logTime = logTime.plusSeconds(random.nextInt(15));
 		
 		apacheLog.setHttpMethod(HTTPMethods.GET);
 		apacheLog.setUrl(faker.internet().url());
