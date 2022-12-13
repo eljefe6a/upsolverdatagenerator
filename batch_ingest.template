@@ -161,7 +161,7 @@
            CREATE or REPLACE TABLE joined_web_traffic_data (
                 user_id VARCHAR(100),
                 zip_code VARCHAR(20),
-                credit_card VARCHAR(30),
+                credit_card VARCHAR(32),
                 first_name VARCHAR(50),
                 last_name VARCHAR(50),
                 password VARCHAR(30),
