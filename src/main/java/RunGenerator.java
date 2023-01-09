@@ -2,6 +2,8 @@ import datacreator.DataCreator;
 import datacreator.FakerCreator;
 import dataoutput.AvroFileOutput;
 import dataoutput.DataOutput;
+import dataoutput.KafkaAvroBinaryOutput;
+import dataoutput.KafkaAvroJSONOutput;
 import model.ApacheLog;
 import model.UserInfo;
 import scala.Tuple2;
@@ -11,14 +13,17 @@ public class RunGenerator {
 		DataCreator dataCreator = new FakerCreator();
 		dataCreator.init();
 		
-		//DataOutput output = new KafkaAvroOutput();
-		DataOutput output = new AvroFileOutput();
+		DataOutput output = new KafkaAvroJSONOutput();
+		//DataOutput output = new KafkaAvroBinaryOutput();
+		//DataOutput output = new AvroFileOutput();
 		output.init();
 		
 		// Write out initial UserInfos
 		for (UserInfo userInfo : dataCreator.getUserIdToUserInfo().values()) {
 			output.writeUserInfo(userInfo);
 		}
+		
+		System.out.println("Wrote initial UserInfos");
 		
 		// Write out ApacheLogs and UserInfos
 		for (int i = 0; i < 100_000; i++) {
@@ -32,6 +37,8 @@ public class RunGenerator {
 				output.writeUserInfo(create._1());
 			}
 		}
+		
+		System.out.println("Wrote out ApacheLogs and UserInfos");
 		
 		output.close();
 	}

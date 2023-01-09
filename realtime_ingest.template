@@ -1,0 +1,157 @@
+/*. 
+This template guides you through building a pipeline that reads from a Kafka topic and writes transformed results to a Snowflake table.
+The steps include:
+    1. Connect to your Kafka cluster. This template uses a public bootstrap server.
+    2. Create empty staging tables to host the raw web traffic and user data.
+    3. Create jobs to copy raw data from the Kafka topic to the staging tables.
+    4. Create a Snowflake connection.
+    5. Create an empty table in Snowflake to host the transformed data.
+    6. Create a job to transform, join, and stream the results to your output Snowflake table.
+*/
+
+
+/*
+    1. Connect to your Kafka cluster using a public bootstrap server. 
+    If you don't have an easily accessible Kafka cluster, you can sign up for a free Confluent cloud account for testing. 
+
+    Example code:
+
+    CREATE KAFKA CONNECTION my_kafka_connection
+       HOSTS = ('pkc-2396y.us-east-1.aws.confluent.cloud:9092')
+       CONSUMER_PROPERTIES = '
+         bootstrap.servers=pkc-2396y.us-east-1.aws.confluent.cloud:9092
+         security.protocol=SASL_SSL
+         sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule   required username="XXXXXXXX"   password="-----------";
+         ssl.endpoint.identification.algorithm=https
+         sasl.mechanism=PLAIN
+       ';
+*/ 
+CREATE KAFKA CONNECTION <KAFKA_CONNECTION_NAME>
+      HOSTS = ('<bootstrap_server_1>:<port_number>','<bootstrap_server_2>:<port_number>') 
+      CONSUMER_PROPERTIES = '<bootstrap_server_1>:<port_number> 
+      security.protocol=SASL_SSL
+      sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule   required username="<kafka_username>"   password="<kafka_password>";
+      ssl.endpoint.identification.algorithm=https
+      sasl.mechanism=PLAIN';
+      -- COMMENT = 'My new Kafka connection';
+
+/*
+    2. Create a staging table to store your raw data from Kafka. 
+    
+    Example code:
+    
+    CREATE TABLE default_glue_catalog.default.kafka_staging_table;
+*/
+CREATE TABLE default_glue_catalog.<DB_NAME>.<STAGING_TABLE_NAME>()
+    PARTITIONED BY $event_date;
+    -- TABLE_DATA_RETENTION = 30 days
+    -- COMMENT = 'My new staging table';
+
+
+/*    
+    3. Create a job to ingest raw streaming data from your Kafka topic to the staging table.
+    
+    Note: It may take a 3-4 minutes for the data to appear in your output table.
+*/
+CREATE JOB <KAFKA_STAGING_JOB>
+    START_FROM = BEGINNING
+    CONTENT_TYPE = JSON
+    /* You're copying from a Kafka topic and streaming the data to the staging table created in step #2 */
+    AS COPY FROM KAFKA <KAFKA_CONNECTION_NAME> TOPIC = '<KAFKA_TOPIC_NAME>' 
+    INTO default_glue_catalog.<DB_NAME>.<STAGING_TABLE_NAME>; 
+    --COMMENT = 'Load raw data from Kafka topic to a staging table';
+
+/* Query the newly populated data in the staging table, created in step 2. */
+SELECT * FROM default_glue_catalog.<DB_NAME>.<STAGING_TABLE_NAME> limit 10;
+
+/* 
+    OPTIONAL:
+    You can gauge progress of the job by inspecting the SystemTable. The following query will return results when the job
+    begins to process data and write the results to S3.
+*/
+SELECT job_name, stage_name, task_start_processing_time, task_end_processing_time, bytes_read, task_error_message
+    FROM SystemTables.logs.task_executions
+    WHERE partition_date = CURRENT_DATE
+    AND job_name = '<KAFKA_STAGING_JOB>' /* job name from step #3 */
+    AND (stage_name = 'write to storage' OR stage_name = 'parse data')
+    ORDER BY task_end_processing_time DESC
+    LIMIT 10;
+
+
+/*
+    4. Create a Snowflake JDBC connection with the proper permissions.
+    
+    Example code:
+    
+    CREATE SNOWFLAKE CONNECTION SFCommerce
+       CONNECTION_STRING = 'jdbc:snowflake://baa12345.us-east-1.snowflakecomputing.com/?db=DEMO_DB'
+       USER_NAME = 'demouser'
+       PASSWORD = 'demopass';
+*/
+CREATE SNOWFLAKE CONNECTION <SNOWFLAKE_CONNECTION_NAME>
+    /* example: CONNECTION_STRING = 'jdbc:snowflake://oeb05742.us-east-1.snowflakecomputing.com/?db=DEMO_DB' */
+    CONNECTION_STRING = 'jdbc:snowflake://<snowflake_connection_url>?db=<snowflake_database_name>'
+    USER_NAME = '<USERNAME>'
+    PASSWORD = '<PASSWORD>';
+    --COMMENT = 'My new Snowflake connection';
+
+
+/*     
+    5. Go to Snowflake and create a new table. This is the target table that you want to populate with transformations applied. 
+    
+    Example DDL for a Snowflake table is provided below. Update to match you Kafka source schema.
+    Example code:
+	CREATE or REPLACE TABLE DEMO.ORDERS_AGGREGATED (
+		BUYER_EMAIL VARCHAR(16777216),
+		SUM_ORDER_TOTAL FLOAT,
+		AVG_ORDER_TOTAL FLOAT
+	);
+    Template:
+	CREATE or REPLACE TABLE <snowflake schema>.<snowflake table> (
+		<column_name> <data_type>, 
+		<column_name> <data_type>, 
+		<column_name> <data_type> 
+	);
+*/
+
+/*     
+    6. Create a job to streams transformed data to your snowflake table created in the previous step
+    
+    Note: You need to have data in your staging table before creating the job.
+    
+    Example code:
+    
+    CREATE JOB "export aggregated orders to Snowflake 3"
+       RUN_INTERVAL = 1 MINUTE
+       START_FROM = BEGINNING
+    AS INSERT INTO SNOWFLAKE "SFCommerce"."DEMO"."ORDERS_AGGREGATED" MAP_COLUMNS_BY_NAME
+       SELECT buyeremail as BUYER_EMAIL,
+       AVG(nettotal) as AVG_ORDER_TOTAL, 
+       SUM(nettotal) as SUM_ORDER_TOTAL
+    FROM Athena.commerce.orders_staging
+    WHERE ($commit_time between run_start_time() AND run_end_time())
+    AND eventtype = 'ORDER'
+    GROUP BY buyeremail;
+*/
+CREATE JOB "<SNOWFLAKE_LOAD_JOB>"
+   RUN_INTERVAL = 1 MINUTE
+   START_FROM = BEGINNING
+   AS INSERT INTO SNOWFLAKE "<SNOWFLAKE_CONNECTION_NAME>"."<SNOWFLAKE_SCHEMA>"."<SNOWFLAKE_TABLE_NAME>" MAP_COLUMNS_BY_NAME
+           /* map the staging columns to your snowflake table columns created from the previous step */
+      SELECT <column_name> as <snowflake_column_name>,
+             <column_name> as <snowflake_column_name>,
+             <column_name> as <snowflake_column_name> 
+           /* this is the table created from step #2 and populated by step #3. */  
+      FROM default_glue_catalog.<DB_NAME>.<STAGING_TABLE_NAME> 
+      WHERE ($commit_time between run_start_time() AND run_end_time())
+      AND <optional filter condition> 
+      GROUP BY <optional GROUP BY for aggreagations>;
+ 
+/** Your pipeline is now running, bringing data from the source Kafka into a staging table, transforming it and saving it to an output table in Snowflake. **/
+ 
+/*
+    7. You can now go to Snowflake and query the table created in Step #5.
+    
+    Example code:
+    SELECT * FROM <SNOWFLAKE_SCHEMA>.<SNOWFLAKE_TABLE_NAME> LIMIT 10;
+*/

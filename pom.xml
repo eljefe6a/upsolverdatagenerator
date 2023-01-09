@@ -13,8 +13,9 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <kafka.version>3.3.1</kafka.version>
     <log4j.version>1.2.16</log4j.version>
     <slf4j.version>1.6.1</slf4j.version>
-    <avro.version>1.7.7</avro.version>
+    <avro.version>1.11.0</avro.version>
     <datafaker.version>1.6.0</datafaker.version>
+    <jackson.version>2.14.1</jackson.version>
     
     <!-- Maven properties for compilation -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -57,6 +58,23 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
         <artifactId>datafaker</artifactId>
         <version>${datafaker.version}</version>
     </dependency>
+    
+    <dependency>
+	    <groupId>com.fasterxml.jackson.core</groupId>
+	    <artifactId>jackson-core</artifactId>
+	    <version>${jackson.version}</version>
+	</dependency>
+	<dependency>
+	    <groupId>com.fasterxml.jackson.core</groupId>
+	    <artifactId>jackson-annotations</artifactId>
+	    <version>${jackson.version}</version>
+	</dependency>
+	<dependency>
+	    <groupId>com.fasterxml.jackson.core</groupId>
+	    <artifactId>jackson-databind</artifactId>
+	    <version>${jackson.version}</version>
+  	</dependency>
+
   </dependencies>
   <build>
     <plugins>
