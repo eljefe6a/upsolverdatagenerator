@@ -1,3 +1,4 @@
+package generator;
 import datacreator.DataCreator;
 import datacreator.FakerCreator;
 import dataoutput.AvroFileOutput;
