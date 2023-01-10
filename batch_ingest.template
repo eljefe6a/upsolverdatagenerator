@@ -18,7 +18,7 @@
         1. Create an S3 connection 
            
         This connection provides the necessary IAM credentials for jobs that need to access data in S3.
-        We will use this connection to read both the orders and the sales data.
+        We will use this connection to read both the user data and the web traffic data.
 
         Follow these instructions to get S3 connected to Upsolver
         https://docs.upsolver.com/sqlake/connectors/connect-to-your-s3-bucket/configure-access-to-s3.
@@ -78,10 +78,10 @@
     SELECT * FROM default_glue_catalog.database_fc91d1.user_data LIMIT 10;
 
     /*
-        4. Create a Materialized View to aggregate the last sales interaction for each order
+        4. Create a Materialized View to aggregate the user data
         
         A Materialized View holds key-value pairs where the key is used to join with another table.
-        Note: You need to have data in your sales info raw data table before creating the materialized view.
+        Note: You need to have data in your user data raw data table before creating the materialized view.
     */
     CREATE MATERIALIZED VIEW default_glue_catalog.database_fc91d1.physical_user_data_materialized_view AS 
         SELECT user_id,
