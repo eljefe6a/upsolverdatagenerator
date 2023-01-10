@@ -23,6 +23,11 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import model.ApacheLog;
 import model.UserInfo;
 
+/**
+ * Outputs the UserInfo and ApacheLog objects in Avro JSON format to Kafka
+ * using UTF-8 strings.
+ *
+ */
 public class KafkaAvroJSONOutput implements DataOutput {
 	KafkaProducer<String, String> userInfoProducer;
 	KafkaProducer<String, String> apacheLogProducer;
@@ -35,7 +40,7 @@ public class KafkaAvroJSONOutput implements DataOutput {
 	Encoder apacheLogEncoder;
 	DatumWriter<ApacheLog> apacheLogWriter;
 
-	public static Properties loadConfig(final String configFile) throws IOException {
+	public Properties loadConfig(final String configFile) throws IOException {
 		if (!Files.exists(Paths.get(configFile))) {
 			throw new IOException(configFile + " not found.");
 		}
@@ -59,6 +64,7 @@ public class KafkaAvroJSONOutput implements DataOutput {
 			userInfoProducer = new KafkaProducer<>(properties);
 			apacheLogProducer = new KafkaProducer<>(properties);
 
+			// Initialize the objects for converting from Avro to JSON
 			userInfoBOS = new ByteArrayOutputStream();
 			userInfoEncoder = EncoderFactory.get().jsonEncoder(UserInfo.getClassSchema(), userInfoBOS);
 

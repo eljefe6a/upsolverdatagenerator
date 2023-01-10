@@ -10,8 +10,15 @@ import org.apache.avro.specific.SpecificDatumWriter;
 import model.ApacheLog;
 import model.UserInfo;
 
+/**
+ * Writes out the UserInfo and ApacheLog data to files in Avro file format.
+ *
+ */
 public class AvroFileOutput implements DataOutput {
+	/** The writer for writing out the UserInfo objects */
 	DataFileWriter<UserInfo> userInfoFileWriter;
+	
+	/** The writer for writing out the ApacheLog objects */
 	DataFileWriter<ApacheLog> apacheLogFileWriter;
 	
 	@Override
