@@ -88,6 +88,8 @@ public class RunGenerator {
 		} else if (outputType.equals("kafkaavro")) {
 			output = new KafkaAvroBinaryOutput();
 		}
+		
+		System.out.println("Writing out with:" + outputType);
 
 		output.init();
 
