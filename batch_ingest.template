@@ -166,7 +166,7 @@
                 credit_card VARCHAR(32),
                 first_name VARCHAR(50),
                 last_name VARCHAR(50),
-                password VARCHAR(30),
+                password VARCHAR(32),
                 phone VARCHAR(20),
                 subscription VARCHAR(20),
                 host VARCHAR(100),
