@@ -16,7 +16,7 @@ import scala.Tuple2;
  * Creates random UserInfo and ApacheLog objects using the Faker library to
  * create plausible fake data.
  */
-public class FakerCreator implements DataCreator {
+public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 	/** A map of user ID to UserInfo object */
 	HashMap<String, UserInfo> userIdToUserInfo = new HashMap<>();
 

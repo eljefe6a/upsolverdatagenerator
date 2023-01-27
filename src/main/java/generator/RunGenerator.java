@@ -1,7 +1,7 @@
 package generator;
 
 import datacreator.DataCreator;
-import datacreator.FakerCreator;
+import datacreator.UserInfoAndApacheLogFakerCreator;
 import dataoutput.AvroFileOutput;
 import dataoutput.DataOutput;
 import dataoutput.KafkaAvroBinaryOutput;
@@ -23,7 +23,7 @@ public class RunGenerator {
 	public static void main(String[] args) {
 		Namespace ns = parseCommandLineArgs(args);
 
-		DataCreator dataCreator = new FakerCreator();
+		DataCreator dataCreator = new UserInfoAndApacheLogFakerCreator();
 		dataCreator.init();
 
 		DataOutput output = initDataOutput(ns);
