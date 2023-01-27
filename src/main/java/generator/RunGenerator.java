@@ -71,7 +71,7 @@ public class RunGenerator {
 		ArgumentParser parser = ArgumentParsers.newFor("RunGenerator").build().defaultHelp(true)
 				.description("Creates plausible fake data and outputs in a variety of formats.");
 		parser.addArgument("-o", "--output").choices("fileavro", "kafkajson", "kafkaavro").setDefault("fileavro")
-				.help("Specify the output format and technology");
+				.help("Specify the output format and technology. The possible values are \"fileavro\", \"kafkajson\", and \"kafkaavro\".");
 		parser.addArgument("-n", "--number").type(Long.class).help("The number of apache log messages to send.")
 				.setDefault(100_000L);
 		Namespace ns = null;
