@@ -7,6 +7,8 @@
         2.  Create two staging tables to ingest the web traffic and user data.
         3.  Create two jobs to load the source data into the staging tables.
         4.  Create materialized views for for the web traffic and user data tables.
+        5.  Create an output table in AWS Glue Data Catalog.
+        6.  Create a job to join the web traffic data with the user data in our Materialized View.
         7.  Create a connection to the Snowflake database.
         8.  Create an empty table in Snowflake to host the cleansed (transformed) data.
         9.  Create a job to start transforming, joining, and streaming the cleansed data to your Snowflake table.

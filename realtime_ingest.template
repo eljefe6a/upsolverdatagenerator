@@ -6,7 +6,7 @@ The steps include:
     3.  Create jobs to ingest the raw data from the Kafka topic to the staging tables.
     4.  Create a Materialized View to aggregate the user data
     5.  Create an output table in AWS Glue Data Catalog.
-    6.  Join the web traffic data with the user data in our Materialized View.
+    6.  Create a job to join the web traffic data with the user data in our Materialized View.
     7.  Create a connection to the Snowflake database.
     8.  Create an empty table in Snowflake to host the joined and cleansed (transformed) data.    
     9.  Create a job to transform, join, and stream the results to your output Snowflake table.
