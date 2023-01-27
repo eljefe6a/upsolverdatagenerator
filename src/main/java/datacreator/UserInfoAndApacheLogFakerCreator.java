@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Random;
 
+import dataoutput.DataOutput;
 import model.ApacheLog;
 import model.HTTPMethods;
 import model.UserInfo;
@@ -26,11 +27,17 @@ public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 	/** Random to make random decisions */
 	Random random;
 
-	/** The date time format for default Apache log date times */ 
+	/** The date time format for default Apache log date times */
 	DateTimeFormatter apacheLogDTF;
 
 	/** The gradually increasing date time that the Apache log timestamps use */
 	ZonedDateTime logTime;
+
+	/** The DataOutput object to write out to */
+	DataOutput dataOutput;
+	
+	/** The number of iterations to run for random generation */
+	long numberOfIterations;
 
 	@Override
 	public void init() {
@@ -49,7 +56,12 @@ public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 		}
 	}
 
-	@Override
+	/**
+	 * Creates a Tuple of a randomly generated UserInfo and ApacheLog object. The
+	 * UserInfo object will match the user in the ApacheLog object.
+	 * 
+	 * @return A Tuple of a randomly generated UserInfo and ApacheLog object
+	 */
 	public Tuple2<UserInfo, ApacheLog> create() {
 		String userId;
 		UserInfo userInfo;
@@ -77,6 +89,7 @@ public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 
 	/**
 	 * Creates a fake UserInfo object
+	 * 
 	 * @return The fake UserInfo object
 	 */
 	private UserInfo createUserInfo() {
@@ -101,6 +114,7 @@ public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 
 	/**
 	 * Creates a fake ApacheLog object
+	 * 
 	 * @return The fake ApacheLog object
 	 */
 	private ApacheLog createApacheLog(String userId) {
@@ -121,9 +135,48 @@ public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 
 		return apacheLog;
 	}
+	
+	@Override
+	public void start() {
+		// Write out initial UserInfos
+		for (UserInfo userInfo : userIdToUserInfo.values()) {
+			dataOutput.writeUserInfo(userInfo);
+		}
+
+		System.out.println("Wrote initial UserInfos");
+
+		writeMessages();
+	}
+
+	/**
+	 * Writes out the UserInfo and ApacheLog objects to the DataOutput
+	 */
+	private void writeMessages() {
+		System.out.println("Writing " + numberOfIterations + " Apache log messages.");
+
+		// Write out ApacheLogs and UserInfos
+		for (long i = 0; i < numberOfIterations; i++) {
+			Tuple2<UserInfo, ApacheLog> create = create();
+
+			// TODO: Randomize which is written first?
+			dataOutput.writeApacheLog(create._2());
+
+			// UserInfo is a brand new one. Write it out.
+			if (create._1() != null) {
+				dataOutput.writeUserInfo(create._1());
+			}
+		}
+
+		System.out.println("Wrote out ApacheLogs and UserInfos");
+	}
 
 	@Override
-	public HashMap<String, UserInfo> getUserIdToUserInfo() {
-		return userIdToUserInfo;
+	public void setIterations(long number) {
+		this.numberOfIterations = number;
+	}
+
+	@Override
+	public void setDataOutput(DataOutput dataOutput) {
+		this.dataOutput = dataOutput;
 	}
 }

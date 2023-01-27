@@ -6,13 +6,10 @@ import dataoutput.AvroFileOutput;
 import dataoutput.DataOutput;
 import dataoutput.KafkaAvroBinaryOutput;
 import dataoutput.KafkaAvroJSONOutput;
-import model.ApacheLog;
-import model.UserInfo;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import scala.Tuple2;
 
 /**
  * Program to create randomly generated user and Apache log data. The data gets
@@ -27,46 +24,11 @@ public class RunGenerator {
 		dataCreator.init();
 
 		DataOutput output = initDataOutput(ns);
-
-		// Write out initial UserInfos
-		for (UserInfo userInfo : dataCreator.getUserIdToUserInfo().values()) {
-			output.writeUserInfo(userInfo);
-		}
-
-		System.out.println("Wrote initial UserInfos");
-
-		writeMessages(ns, dataCreator, output);
+		
+		dataCreator.setDataOutput(output);
+		dataCreator.start();
 
 		output.close();
-	}
-
-	/**
-	 * Writes out the UserInfo and ApacheLog objects to the DataOutput
-	 * 
-	 * @param ns          The parsed command line
-	 * @param dataCreator The data creator to randomly create the UserInfo and
-	 *                    ApacheLog
-	 * @param output      The DataOutput to write to
-	 */
-	private static void writeMessages(Namespace ns, DataCreator dataCreator, DataOutput output) {
-		long numberOfMessages = ns.getLong("number");
-
-		System.out.println("Writing " + numberOfMessages + " Apache log messages.");
-
-		// Write out ApacheLogs and UserInfos
-		for (long i = 0; i < numberOfMessages; i++) {
-			Tuple2<UserInfo, ApacheLog> create = dataCreator.create();
-
-			// TODO: Randomize which is written first?
-			output.writeApacheLog(create._2());
-
-			// UserInfo is a brand new one. Write it out.
-			if (create._1() != null) {
-				output.writeUserInfo(create._1());
-			}
-		}
-
-		System.out.println("Wrote out ApacheLogs and UserInfos");
 	}
 
 	/**
