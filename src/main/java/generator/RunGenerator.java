@@ -26,6 +26,8 @@ public class RunGenerator {
 		DataOutput output = initDataOutput(ns);
 		
 		dataCreator.setDataOutput(output);
+		dataCreator.setIterations(ns.getLong("number"));
+		
 		dataCreator.start();
 
 		output.close();
