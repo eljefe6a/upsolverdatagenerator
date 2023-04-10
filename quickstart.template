@@ -1,0 +1,56 @@
+CREATE S3 CONNECTION upsolver_s3_samples
+AWS_ROLE = 'arn:aws:iam::949275490180:role/upsolver_samples_role'
+EXTERNAL_ID = 'SAMPLES'
+READ_ONLY = TRUE;
+
+CREATE TABLE default_glue_catalog.database_fc91d1.orders_raw_data()
+PARTITIONED BY $event_date;
+
+CREATE SYNC JOB load_orders_raw_data_from_s3
+CONTENT_TYPE = JSON
+AS COPY FROM S3 upsolver_s3_samples LOCATION = 's3://upsolver-samples/orders/' 
+INTO default_glue_catalog.database_fc91d1.orders_raw_data; 
+
+SELECT * FROM default_glue_catalog.database_fc91d1.orders_raw_data limit 10; 
+
+CREATE SNOWFLAKE CONNECTION snowflake_connection
+CONNECTION_STRING = 'jdbc:snowflake://baa55269.us-east-1.snowflakecomputing.com/?db=DEMO_DB&warehouse=COMPUTE_WH'
+USER_NAME = 'demo_user'
+PASSWORD = 'Upsolver!23';
+
+/*
+Go to Snowflake and create a new table. This is the target table that you want to populate with transformations applied. 
+Example DDL for a Snowflake table is provided here. You need to run this in your Snowflake environment:
+       
+Sample code:
+CREATE or REPLACE TABLE orders_data_quickstart (
+       data VARCHAR(1000),
+       nettotal float,
+       orderdate TIMESTAMP_NTZ,
+       orderid VARCHAR(50),
+       ordertype VARCHAR(50),
+       shippinginfo VARCHAR(1000),
+       taxrate float
+);
+*/
+
+CREATE JOB "snowflake_loader"
+   RUN_INTERVAL = 1 MINUTE
+   START_FROM = BEGINNING
+   AS INSERT INTO SNOWFLAKE "snowflake_connection"."DEMO"."ORDERS_DATA_QUICKSTART" MAP_COLUMNS_BY_NAME
+      SELECT DATA as DATA,
+             NETTOTAL as NETTOTAL,
+             ORDERDATE as ORDERDATE,
+             ORDERID as ORDERID,
+             ORDERTYPE as ORDERTYPE,
+             SHIPPINGINFO as SHIPPINGINFO,
+             TAXRATE as TAXRATE
+      FROM default_glue_catalog.database_fc91d1.orders_raw_data
+      WHERE ($commit_time between run_start_time() AND run_end_time());
+     
+/*
+You can now go to Snowflake and query the ORDER_DATA_QUICKSTART table you created to make sure the data is being streamed properly. 
+
+Example code: 
+SELECT * FROM DEMO_DB.DEMO.ORDERS_DATA_QUICKSTART LIMIT 10;
+*/

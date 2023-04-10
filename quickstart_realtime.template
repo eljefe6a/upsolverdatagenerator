@@ -1,0 +1,133 @@
+CREATE KAFKA CONNECTION KAFKA_CONNECTION
+      HOSTS = ('pkc-2396y.us-east-1.aws.confluent.cloud:9092') 
+      CONSUMER_PROPERTIES = 'pkc-2396y.us-east-1.aws.confluent.cloud:9092
+      security.protocol=SASL_SSL
+      sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule   required username="MQZLJDZ2YWGT2R7T"   password="4UdYTH3Ok1fznHcLLAeM4QPUw/1QY1ZxMaDqUmW9dpQJKEmzVwJQtnAedWBWXq1R";
+      ssl.endpoint.identification.algorithm=https
+      sasl.mechanism=PLAIN';
+
+CREATE TABLE default_glue_catalog.database_fc91d1.rt_web_traffic_data(
+    host string,
+    user_id string,
+    time_stamp string,
+    http_method string,
+    url string,
+    protocol string,
+    status_code string,
+    browser_client string
+)
+PARTITIONED BY $event_date
+PRIMARY KEY user_id;
+
+CREATE TABLE default_glue_catalog.database_fc91d1.rt_user_data()
+    PARTITIONED BY $event_date;
+
+CREATE JOB rt_web_traffic_data_job
+    START_FROM = BEGINNING
+    CONTENT_TYPE = JSON
+    AS COPY FROM KAFKA KAFKA_CONNECTION TOPIC = 'apache_log_json' 
+    INTO default_glue_catalog.database_fc91d1.rt_web_traffic_data; 
+
+CREATE JOB rt_user_info_job
+    START_FROM = BEGINNING
+    CONTENT_TYPE = JSON
+    ALLOW_EMPTY_SOURCES = true
+    AS COPY FROM KAFKA KAFKA_CONNECTION TOPIC = 'user_info_json' 
+    INTO default_glue_catalog.database_fc91d1.rt_user_data; 
+
+SELECT * FROM default_glue_catalog.database_fc91d1.rt_web_traffic_data limit 10;
+SELECT * FROM default_glue_catalog.database_fc91d1.rt_user_data limit 10;
+
+CREATE MATERIALIZED VIEW default_glue_catalog.database_fc91d1.rt_physical_user_data_materialized_view AS 
+    SELECT user_id,
+       LAST(LAST_ELEMENT(SPLIT(address, ' '))) as zip_code,
+       LAST(MD5(credit_card)) as credit_card,
+       LAST(first_name) as first_name,
+       LAST(last_name) as last_name,
+       LAST(MD5(password)) as password,
+       LAST(phone) as phone,
+       LAST(subscription) as subscription
+    FROM default_glue_catalog.database_fc91d1.rt_user_data
+    GROUP BY user_id;
+
+CREATE TABLE default_glue_catalog.database_fc91d1.rt_joined_web_traffic_data(
+       host STRING,
+       user_id STRING,
+       zip_code STRING,
+       credit_card STRING,
+       first_name STRING,
+       last_name STRING,
+       password STRING,
+       phone STRING,
+       subscription STRING,
+       url STRING
+       )
+PRIMARY KEY user_id;
+
+CREATE JOB rt_join_user_data_and_web_traffic
+    START_FROM = BEGINNING
+    ADD_MISSING_COLUMNS = TRUE
+    RUN_INTERVAL = 1 MINUTE
+    AS INSERT INTO default_glue_catalog.database_fc91d1.rt_joined_web_traffic_data map_columns_by_name
+    SELECT 
+       s.user_id as user_id,
+       m_v.credit_card as credit_card,
+       m_v.first_name as first_name,
+       m_v.last_name as last_name,
+       m_v.password as password,
+       m_v.phone as phone,
+       m_v.subscription as subscription,
+       s.host as host,
+       s.url as url
+    FROM default_glue_catalog.database_fc91d1.rt_web_traffic_data as s
+    LEFT JOIN default_glue_catalog.database_fc91d1.rt_physical_user_data_materialized_view AS m_v
+    ON s.user_id = m_v.user_id
+    WHERE $commit_time between run_start_time() AND run_end_time();
+
+SELECT * FROM default_glue_catalog.database_fc91d1.rt_joined_web_traffic_data LIMIT 10;
+
+CREATE SNOWFLAKE CONNECTION snowflake_connection
+    CONNECTION_STRING = 'jdbc:snowflake://wub03701.us-east-1.snowflakecomputing.com/?db=DEMO&warehouse=COMPUTE_WH'
+    USER_NAME = 'jesse'
+    PASSWORD = 'bIxyf71xHVRvFsHaYu';
+
+
+/*     
+    Go to Snowflake and create a new table.
+    
+    CREATE or REPLACE TABLE rt_joined_web_traffic_data (
+           user_id VARCHAR(100),
+           zip_code VARCHAR(20),
+           credit_card VARCHAR(32),
+           first_name VARCHAR(50),
+           last_name VARCHAR(50),
+           password VARCHAR(32),
+           phone VARCHAR(20),
+           subscription VARCHAR(20),
+           host VARCHAR(100),
+           url VARCHAR(200)
+    );
+*/
+
+CREATE JOB "snowflake_loader"
+   RUN_INTERVAL = 1 MINUTE
+   START_FROM = BEGINNING
+   AS INSERT INTO SNOWFLAKE snowflake_connection.PUBLIC.RT_JOINED_WEB_TRAFFIC_DATA MAP_COLUMNS_BY_NAME
+      SELECT USER_ID as USER_ID,
+            ZIP_CODE as ZIP_CODE,
+            CREDIT_CARD as CREDIT_CARD,
+            FIRST_NAME as FIRST_NAME,
+            LAST_NAME as LAST_NAME,
+            PASSWORD as PASSWORD,
+            PHONE as PHONE,
+            SUBSCRIPTION as SUBSCRIPTION,
+            HOST as HOST,
+            URL as URL
+      FROM default_glue_catalog.database_fc91d1.rt_joined_web_traffic_data
+      WHERE ($commit_time between run_start_time() AND run_end_time());
+
+/*
+    10. You can now go to Snowflake and query the table created in Step #5.
+    
+    SELECT * FROM DEMO.PUBLIC.RT_JOINED_WEB_TRAFFIC_DATA LIMIT 10;
+*/
