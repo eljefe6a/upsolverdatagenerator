@@ -35,43 +35,28 @@ Go to Snowflake and create a new table. This is the target table that you want t
 Example DDL for a Snowflake table is provided here. You need to run this in your Snowflake environment:
 TODO: Change this to just web traffice data table columns
 Sample code:
-CREATE or REPLACE TABLE joined_web_traffic_data (
+CREATE or REPLACE TABLE web_traffic_data (
     user_id VARCHAR(100),
-    zip_code VARCHAR(20),
-    credit_card VARCHAR(32),
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    password VARCHAR(32),
-    phone VARCHAR(20),
-    subscription VARCHAR(20),
     host VARCHAR(100),
     url VARCHAR(200)
 );
 */
 
-TODO: Change this to just web traffic data table columns
 CREATE JOB "snowflake_loader"
 RUN_INTERVAL = 1 MINUTE
 START_FROM = BEGINNING
-AS INSERT INTO SNOWFLAKE "snowflake_connection"."PUBLIC"."JOINED_WEB_TRAFFIC_DATA" MAP_COLUMNS_BY_NAME
+AS INSERT INTO SNOWFLAKE "snowflake_connection"."PUBLIC"."WEB_TRAFFIC_DATA" MAP_COLUMNS_BY_NAME
     SELECT USER_ID as USER_ID,
-        ZIP_CODE as ZIP_CODE,
-        CREDIT_CARD as CREDIT_CARD,
-        FIRST_NAME as FIRST_NAME,
-        LAST_NAME as LAST_NAME,
-        PASSWORD as PASSWORD,
-        PHONE as PHONE,
-        SUBSCRIPTION as SUBSCRIPTION,
         HOST as HOST,
         URL as URL
-    FROM default_glue_catalog.database_fc91d1.joined_web_traffic_data
+    FROM default_glue_catalog.database_fc91d1.web_traffic_data
     WHERE ($commit_time between run_start_time() AND run_end_time());
      
  /*
  You can now go to Snowflake and query the table you created. 
  
 Example code: 
-SELECT * FROM DEMO.PUBLIC.JOINED_WEB_TRAFFIC_DATA LIMIT 10;
+SELECT * FROM DEMO.PUBLIC.WEB_TRAFFIC_DATA LIMIT 10;
  */
 
 
