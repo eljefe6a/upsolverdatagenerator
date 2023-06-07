@@ -108,6 +108,8 @@ public class UserInfoAndApacheLogFakerCreator implements DataCreator {
 		userInfo.setPassword(faker.internet().password());
 		userInfo.setSubscription(faker.subscription().subscriptionTerms());
 		userInfo.setCreditCard(faker.business().creditCardNumber());
+		userInfo.setNewfield("test");
+		
 
 		return userInfo;
 	}

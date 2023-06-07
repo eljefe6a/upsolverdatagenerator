@@ -157,14 +157,14 @@ SELECT * FROM default_glue_catalog.database_fc91d1.rt_user_data limit 10;
     Example code:
     
     CREATE SNOWFLAKE CONNECTION SFCommerce
-       CONNECTION_STRING = 'jdbc:snowflake://baa12345.us-east-1.snowflakecomputing.com/?db=DEMO_DB'
-       USER_NAME = 'demouser'
-       PASSWORD = 'demopass';
+       CONNECTION_STRING = 'changeme'
+       USER_NAME = 'changeme'
+       PASSWORD = 'changeme';
 */
     CREATE SNOWFLAKE CONNECTION snowflake_connection
-        CONNECTION_STRING = 'jdbc:snowflake://wub03701.us-east-1.snowflakecomputing.com/?db=DEMO&warehouse=COMPUTE_WH'
-        USER_NAME = 'jesse'
-        PASSWORD = 'bIxyf71xHVRvFsHaYu';
+        CONNECTION_STRING = 'changeme'
+        USER_NAME = 'changeme'
+        PASSWORD = 'changeme';
 
 
 /*     

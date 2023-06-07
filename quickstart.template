@@ -14,9 +14,9 @@ INTO default_glue_catalog.database_fc91d1.orders_raw_data;
 SELECT * FROM default_glue_catalog.database_fc91d1.orders_raw_data limit 10; 
 
 CREATE SNOWFLAKE CONNECTION snowflake_connection
-CONNECTION_STRING = 'jdbc:snowflake://baa55269.us-east-1.snowflakecomputing.com/?db=DEMO_DB&warehouse=COMPUTE_WH'
-USER_NAME = 'demo_user'
-PASSWORD = 'Upsolver!23';
+CONNECTION_STRING = 'changeme'
+USER_NAME = 'changeme'
+PASSWORD = 'changeme';
 
 /*
 Go to Snowflake and create a new table. This is the target table that you want to populate with transformations applied. 

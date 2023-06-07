@@ -9,7 +9,7 @@
      {"name": "address", "type": "string", "default" : "", "doc" : "The user's address"},
      {"name": "phone", "type": "string", "default" : "", "doc" : "The user's phone number"},
      {"name": "password", "type": "string", "default" : "", "doc" : "The user's password"},
-     {"name": "subscription", "type": "string", "default" : "", "doc" : "The type of subscription for the user"}
-     
+     {"name": "subscription", "type": "string", "default" : "", "doc" : "The type of subscription for the user"},
+     {"name": "newfield", "type": "string", "default" : "", "doc" : "The type of subscription for the user"}
  ]
 }
